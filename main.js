@@ -77,9 +77,8 @@ normal_texture.flipY = false;
 ao_texture.flipY = false;
 
 // - - - ENVMAPS
-const env_map = dds_loader.load( "./res/images/cubemaps/studio_london/studio_londonEnvMDR.dds" );
-const irr_map = dds_loader.load( "./res/images/cubemaps/studio_london/studio_londonDiffuseMDR.dds" );
-const rad_map = dds_loader.load( "./res/images/cubemaps/studio_london/studio_londonSpecularMDR.dds" );
+const irr_map = dds_loader.load( "./res/images/cubemaps/studio_country/diffuse.dds" );
+const rad_map = dds_loader.load( "./res/images/cubemaps/studio_country/specular.dds" );
 
 //scene.background = env_map;
 
@@ -114,7 +113,7 @@ manager.onLoad = () => {
         aoStr : { type: "1f", value: 1.0 },
         irrMap : { type: "t", value: irr_map },
         radMap : { type: "t", value: rad_map },
-        envStr : { type: "1f", value: 0.4 },
+        envStr : { type: "1f", value: 0.2 },
     };
     const uniforms = Object.assign( a, b );
     console.log(uniforms);
@@ -140,11 +139,6 @@ manager.onLoad = () => {
 
     // add to scene
     scene.add(model);
-    console.log(env_map);
-    console.log(irr_map);
-    console.log(rad_map);
-    env_map.mipmaps = []
-    scene.background = env_map;
 }
 
 function animate() {

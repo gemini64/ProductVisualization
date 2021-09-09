@@ -89,8 +89,8 @@ export const pbrmaterial_fs = `
         return x*x;
     }
 
-    float GGXRoughnessToBlinnExponent( const in float ggxRoughness ) {
-        return ( 2.0 / pow2( ggxRoughness + 0.0001 ) - 2.0 );
+    float GGXRoughnessToBlinnExponent( const in float roughness ) {
+        return ( 2.0 / pow2( roughness + 0.0001 ) - 2.0 );
     }
 
     vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
@@ -124,18 +124,18 @@ export const pbrmaterial_fs = `
         return envMapColor.rgb;
     }
 
-    vec3 BRDF_Specular_GGX_Environment( const in vec3 normal, const in vec3 viewDir, const in vec3 cspec, const in float roughness ) {
-        float dotNV = clamp( dot( normal, viewDir ), 0.0, 1.0 ); 
+    vec3 BRDF_Specular_GGX_Environment( vec3 normal, vec3 viewDir, const in vec3 cspec, const in float roughness ) { 
+        float dotNV = clamp( dot( normal, viewDir ), 0.0, 1.0);
         const vec4 c0 = vec4( - 1, - 0.0275, - 0.572, 0.022 ); 
         const vec4 c1 = vec4( 1, 0.0425, 1.04, - 0.04 ); 
         vec4 r = roughness * c0 + c1; 
         float a004 = min( r.x * r.x, exp2( - 9.28 * dotNV ) ) * r.x + r.y; 
-        vec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw; 
+        vec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw;
         return cspec * AB.x + AB.y;
     }
 
     void main() {
-        vec3 directRadiance = vec3(0.0);
+        vec3 directLightning = vec3(0.0);
         vec3 indirectLightning = vec3(0.0);
 
         // set up per-fragment normal
@@ -198,7 +198,7 @@ export const pbrmaterial_fs = `
             vec3 specularTerm = ( fTerm * GSmith * GGX(alpha, nDoth) ) / ( 4.0 * nDotl * nDotv );
             vec3 diffuseTerm = (vec3(1.0) - fTerm) * (cdiff / PI);
 
-            directRadiance = directRadiance + ( PI * (clight * attenuation) * nDotl * (specularTerm + diffuseTerm));
+            directLightning = directLightning + ( PI * (clight * attenuation) * nDotl * (specularTerm + diffuseTerm));
         }
 
         // - - - - Indirect Lightning
@@ -212,9 +212,9 @@ export const pbrmaterial_fs = `
         vec3 indirectRadiance = vec3(0.0);
         indirectRadiance = indirectRadiance + ambientRadiance * BRDF_Specular_GGX_Environment( n, v, cspec, roughness );
         
-        indirectLightning = indirectLightning + indirectRadiance + indirectIrradiance;
+        indirectLightning = indirectLightning + indirectIrradiance + indirectRadiance;
 
-        vec3 outRadiance = directRadiance + indirectLightning * ( occlusion * aoStr ) * envStr;
+        vec3 outRadiance = directLightning + indirectLightning * (occlusion * aoStr) * envStr;
 
         // out value is gamma encoded
         GammaEncode( outRadiance, GAMMA );
