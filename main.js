@@ -2,8 +2,8 @@ import * as THREE from './three/build/three.module.js';
 import Stats from './three/examples/jsm/libs/stats.module.js';
 import { GLTFLoader } from './three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
+import { DDSLoader } from './three/examples/jsm/loaders/DDSLoader.js';
 //import { HDRCubeTextureLoader } from './three/examples/jsm/loaders/HDRCubeTextureLoader.js';
-import { LightProbeGenerator } from './three/examples/jsm/lights/LightProbeGenerator.js';
 
 import { pbrmaterial_fs, pbrmaterial_vs } from './modules/shaders.js';
 
@@ -26,7 +26,7 @@ const controls = new OrbitControls( camera, renderer.domElement );
 const pivot = new THREE.Object3D();
 const light1 = new THREE.PointLight(
     new THREE.Vector3(1.0,1.0,1.0),
-    0,
+    1,
     550,
     1
 );
@@ -34,7 +34,7 @@ light1.position.set( -200, 0, 0 );
 
 const light2 = new THREE.PointLight(
     new THREE.Vector3(1.0,1.0,1.0),
-    0,
+    1,
     550,
     1
 );
@@ -60,7 +60,8 @@ const paths = {
 const manager = new THREE.LoadingManager();
 const texture_loader = new THREE.TextureLoader( manager );
 const model_loader = new GLTFLoader( manager );
-const cubemap_loader = new THREE.CubeTextureLoader( manager );
+const dds_loader = new DDSLoader( manager );
+//const cubemap_loader = new HDRCubeTextureLoader( manager );
 
 const base_texture = texture_loader.load( paths.base );
 const rough_texture = texture_loader.load( paths.rough );
@@ -75,36 +76,12 @@ metal_texture.flipY = false;
 normal_texture.flipY = false;
 ao_texture.flipY = false;
 
-// - - - ENVMAP
-const cube_paths = [ 'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png' ];
-cubemap_loader.setPath( './res/images/cubemap/' );
+// - - - ENVMAPS
+const env_map = dds_loader.load( "./res/images/cubemaps/studio_london/studio_londonEnvMDR.dds" );
+const irr_map = dds_loader.load( "./res/images/cubemaps/studio_london/studio_londonDiffuseMDR.dds" );
+const rad_map = dds_loader.load( "./res/images/cubemaps/studio_london/studio_londonSpecularMDR.dds" );
 
-let irr_map;
-const env_map = cubemap_loader.load( cube_paths, function () {
-
-    env_map.generateMipmaps = true;
-    env_map.magFilter = THREE.LinearFilter;
-    env_map.minFilter = THREE.LinearMipMapLinearFilter;
-    env_map.needsUpdate = true;
-    env_map.encoding = THREE.sRGBEncoding;
-    scene.background = env_map;
-
-    // generate PMREM filtered envmap
-    // const pmrem_gen = new THREE.PMREMGenerator( renderer );
-    // pmrem_gen.compileCubemapShader();
-
-    // let spec_map_target = pmrem_gen.fromCubemap( env_map );
-    // spec_map = spec_map_target.texture;
-    // spec_map.encoding = THREE.RGBEEncoding;
-
-    // pmrem_gen.dispose();
-
-    // generate irradiance map
-    const irr_target = new THREE.LightProbe().copy( LightProbeGenerator.fromCubeTexture( env_map ) );
-    console.log(irr_target);
-    
-});
-
+//scene.background = env_map;
 
 // - - - MODELS
 let model;
@@ -129,13 +106,15 @@ manager.onLoad = () => {
     // setup uniforms
     const a = THREE.UniformsLib['lights'];
     const b = {
-        basecolorMap: { type: "t", value: base_texture },
-        roughnessMap: { type: "t", value: rough_texture },
-        metalnessMap: { type: "t", value: metal_texture },
-        normalMap: { type: "t", value: normal_texture },
+        basecolorMap : { type: "t", value: base_texture },
+        roughnessMap : { type: "t", value: rough_texture },
+        metalnessMap : { type: "t", value: metal_texture },
+        normalMap : { type: "t", value: normal_texture },
         aoMap : { type: "t", value: ao_texture },
-        envStr: { type: "1f", value: 1.0 },
-        envMap : { type: "t", value: env_map },
+        aoStr : { type: "1f", value: 1.0 },
+        irrMap : { type: "t", value: irr_map },
+        radMap : { type: "t", value: rad_map },
+        envStr : { type: "1f", value: 0.4 },
     };
     const uniforms = Object.assign( a, b );
     console.log(uniforms);
@@ -146,6 +125,7 @@ manager.onLoad = () => {
         uniforms: uniforms,
         lights: true,
     });
+
 
     shader_material.needsUpdate = true;
 
@@ -160,6 +140,11 @@ manager.onLoad = () => {
 
     // add to scene
     scene.add(model);
+    console.log(env_map);
+    console.log(irr_map);
+    console.log(rad_map);
+    env_map.mipmaps = []
+    scene.background = env_map;
 }
 
 function animate() {

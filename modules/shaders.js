@@ -44,10 +44,11 @@ export const pbrmaterial_fs = `
     uniform sampler2D metalnessMap;
     uniform sampler2D roughnessMap;
     uniform sampler2D normalMap;
+    uniform float aoStr;
     uniform sampler2D aoMap;
-    uniform samplerCube envMap;
+    uniform samplerCube irrMap;
+    uniform samplerCube radMap;
     uniform float envStr;
-    //uniform int maxMipLevel;
 
     // directions
     varying vec3 vPosition;
@@ -88,8 +89,12 @@ export const pbrmaterial_fs = `
         return x*x;
     }
 
-    float GGXRoughnessToBlinnExponent( const in float roughness ) {
-        return ( 2.0 / pow2( roughness + 0.0001 ) - 2.0 );
+    float GGXRoughnessToBlinnExponent( const in float ggxRoughness ) {
+        return ( 2.0 / pow2( ggxRoughness + 0.0001 ) - 2.0 );
+    }
+
+    vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
+        return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
     }
 
     float getSpecularMIPLevel( const in float blinnShininessExponent, const in int maxMIPLevel ) {
@@ -98,25 +103,23 @@ export const pbrmaterial_fs = `
         return clamp( desiredMIPLevel, 0.0, maxMIPLevelScalar );
     }
 
-    vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
-        return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
-    }
-
-    vec3 indirectRadiance( const in vec3 viewDir, const in vec3 normal, const in float blinnShininessExponent, const in int maxMIPLevel, const in samplerCube envMap) {
+    vec3 getIBLRadiance( const in vec3 viewDir, const in vec3 normal, const in float blinnShininessExponent, const in int maxMIPLevel, const in samplerCube envMap ) {
         vec3 reflectVec = reflect( -viewDir, normal );
         reflectVec = inverseTransformDirection( reflectVec, viewMatrix );
         float specularMIPLevel = getSpecularMIPLevel( blinnShininessExponent, maxMIPLevel );
 
         vec3 queryReflectVec = vec3( -1.0 * reflectVec.x, reflectVec.yz );
-        vec4 envMapColor = textureCube( envMap, queryReflectVec, specularMIPLevel );
+        vec4 envMapColor = textureCubeLodEXT( envMap, queryReflectVec, specularMIPLevel );
+        //envMapColor = RGBEToLinear(envMapColor);
 
         return envMapColor.rgb;
     }
 
-    vec3 indirectIrradiance( const in vec3 normal, const in int maxMIPLevel, const in samplerCube envMap ) {
+    vec3 getIBLIrradiance( const in vec3 normal, const in samplerCube envMap ) {
         vec3 worldNormal = inverseTransformDirection( normal, viewMatrix );
         vec3 queryVec = vec3( -1.0 * worldNormal.x, worldNormal.yz );
-        vec4 envMapColor = textureCube( envMap, queryVec, float( maxMIPLevel ) );
+        vec4 envMapColor = textureCube( envMap, queryVec);
+        //envMapColor = RGBEToLinear(envMapColor);
 
         return envMapColor.rgb;
     }
@@ -133,7 +136,7 @@ export const pbrmaterial_fs = `
 
     void main() {
         vec3 directRadiance = vec3(0.0);
-        vec3 ambientRadiance = vec3(0.0);
+        vec3 indirectLightning = vec3(0.0);
 
         // set up per-fragment normal
         vec3 normal = normalize( vNormal );
@@ -145,9 +148,8 @@ export const pbrmaterial_fs = `
         vec3 mapN = texture2D( normalMap, vUv ).xyz * 2.0 - 1.0;
         vec3 n = normalize( vTBN * mapN );
 
-        // get envmap sampling direction
+        // get normal in world space
         vec3 worldN = inverseTransformDirection( n, viewMatrix );
-        vec3 ambient = textureCube( envMap, worldN ).rgb;
 
         // read per-fragment roughness
         float roughness = texture2D( roughnessMap, vUv.xy ).x;
@@ -200,21 +202,19 @@ export const pbrmaterial_fs = `
         }
 
         // - - - - Indirect Lightning
-        vec3 ambientDiff = indirectIrradiance( n, 8, envMap );
-        GammaDecode( ambientDiff, GAMMA );
-
-        vec3 indirectDiff = vec3(0.0);
-        indirectDiff = indirectDiff + cdiff * ambientDiff;
-
-        vec3 ambientSpec = indirectRadiance( normalize( vPosition ), n, GGXRoughnessToBlinnExponent( roughness ), 8, envMap );
-        GammaDecode( ambientSpec, GAMMA );
-
-        vec3 indirectSpec = vec3(0.0);
-        indirectSpec = indirectSpec + ambientSpec * BRDF_Specular_GGX_Environment( n, v, cspec, roughness );
+        vec3 ambientIrradiance = getIBLIrradiance( n, irrMap );
         
-        ambientRadiance = ambientRadiance + indirectSpec + indirectDiff;
+        vec3 indirectIrradiance = vec3(0.0);
+        indirectIrradiance = indirectIrradiance + cdiff * ambientIrradiance;
 
-        vec3 outRadiance = directRadiance + ambientRadiance * occlusion * 1.0;
+        vec3 ambientRadiance = getIBLRadiance( normalize( vPosition ), n, GGXRoughnessToBlinnExponent( roughness ), 9, radMap );
+        
+        vec3 indirectRadiance = vec3(0.0);
+        indirectRadiance = indirectRadiance + ambientRadiance * BRDF_Specular_GGX_Environment( n, v, cspec, roughness );
+        
+        indirectLightning = indirectLightning + indirectRadiance + indirectIrradiance;
+
+        vec3 outRadiance = directRadiance + indirectLightning * ( occlusion * aoStr ) * envStr;
 
         // out value is gamma encoded
         GammaEncode( outRadiance, GAMMA );
