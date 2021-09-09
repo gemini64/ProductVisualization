@@ -1,0 +1,251 @@
+{
+    "asset": {
+        "version": "2.0",
+        "generator": "Open Asset Import Library (assimp v3.1.128981410)"
+    },
+    "extensionsUsed": [
+        "KHR_materials_pbrSpecularGlossiness"
+    ],
+    "accessors": [
+        {
+            "bufferView": 0,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 32961,
+            "type": "VEC3",
+            "max": [
+                350.7143859863281,
+                216.18405151367188,
+                532.2510986328125
+            ],
+            "min": [
+                -0.000030517578125,
+                -0.00000762939453125,
+                0.0
+            ]
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 32961,
+            "type": "VEC3",
+            "max": [
+                1.0,
+                0.9999824166297913,
+                0.9999988675117493
+            ],
+            "min": [
+                -0.9999972581863403,
+                -0.999988853931427,
+                -0.9999979734420776
+            ]
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 32961,
+            "type": "VEC2",
+            "max": [
+                0.9994999766349793,
+                0.9994999766349793
+            ],
+            "min": [
+                0.0005000000237487257,
+                0.04809999465942383
+            ]
+        },
+        {
+            "bufferView": 3,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 182364,
+            "type": "SCALAR",
+            "max": [
+                32960.0
+            ],
+            "min": [
+                0.0
+            ]
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 1419480,
+            "uri": "statue.bin"
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteOffset": 0,
+            "byteLength": 395532,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 395532,
+            "byteLength": 395532,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 791064,
+            "byteLength": 263688,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 1054752,
+            "byteLength": 364728,
+            "target": 34963
+        }
+    ],
+    "images": [
+        {
+            "uri": "textures/defaultMat_diffuse.jpeg"
+        },
+        {
+            "uri": "textures/defaultMat_normal.png"
+        },
+        {
+            "uri": "textures/defaultMat_specularGlossiness.png"
+        }
+    ],
+    "materials": [
+        {
+            "name": "defaultMat",
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 0
+                }
+            },
+            "normalTexture": {
+                "index": 1
+            },
+            "doubleSided": true,
+            "glossinessFactor": 0.6297637224197388,
+            "extensions": {
+                "KHR_materials_pbrSpecularGlossiness": {
+                    "specularFactor": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "diffuseTexture": {
+                        "index": 0
+                    },
+                    "specularGlossinessTexture": {
+                        "index": 2
+                    }
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "name": "Object_0",
+            "primitives": [
+                {
+                    "mode": 4,
+                    "material": 0,
+                    "indices": 3,
+                    "attributes": {
+                        "POSITION": 0,
+                        "NORMAL": 1,
+                        "TEXCOORD_0": 2
+                    }
+                }
+            ]
+        }
+    ],
+    "nodes": [
+        {
+            "name": "Sketchfab_model",
+            "matrix": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                2.220446049250313e-16,
+                -1.0,
+                0.0,
+                0.0,
+                1.0,
+                2.220446049250313e-16,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "children": [
+                1
+            ]
+        },
+        {
+            "name": "MCh_S_12_Rzezba_Popiersie_Rozy_Loewenfeld.OBJ.cleaner.gles",
+            "matrix": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                -179.27061462402345,
+                -104.73188018798828,
+                -222.3562774658203,
+                1.0
+            ],
+            "children": [
+                2
+            ]
+        },
+        {
+            "name": "Object_2",
+            "children": [
+                3
+            ]
+        },
+        {
+            "name": "Object_3",
+            "mesh": 0
+        }
+    ],
+    "samplers": [
+        {
+            "magFilter": 9729,
+            "minFilter": 9987
+        }
+    ],
+    "scenes": [
+        {
+            "nodes": [
+                0
+            ]
+        }
+    ],
+    "textures": [
+        {
+            "source": 0,
+            "sampler": 0
+        },
+        {
+            "source": 1,
+            "sampler": 0
+        },
+        {
+            "source": 2,
+            "sampler": 0
+        }
+    ],
+    "scene": 0
+}
