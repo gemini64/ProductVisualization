@@ -3,7 +3,6 @@ import Stats from './three/examples/jsm/libs/stats.module.js';
 import { GLTFLoader } from './three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
 import { DDSLoader } from './three/examples/jsm/loaders/DDSLoader.js';
-//import { HDRCubeTextureLoader } from './three/examples/jsm/loaders/HDRCubeTextureLoader.js';
 
 import { pbrmaterial_fs, pbrmaterial_vs } from './modules/shaders.js';
 
@@ -26,7 +25,7 @@ const controls = new OrbitControls( camera, renderer.domElement );
 const pivot = new THREE.Object3D();
 const light1 = new THREE.PointLight(
     new THREE.Vector3(1.0,1.0,1.0),
-    1,
+    0,
     550,
     1
 );
@@ -34,7 +33,7 @@ light1.position.set( -200, 0, 0 );
 
 const light2 = new THREE.PointLight(
     new THREE.Vector3(1.0,1.0,1.0),
-    1,
+    0,
     550,
     1
 );
@@ -45,6 +44,15 @@ scene.add(pivot);
 
 camera.position.set(0,0,500.0);
 controls.update();
+
+
+// const formats = {
+//     astc: renderer.extensions.has( 'WEBGL_compressed_texture_astc' ),
+//     etc1: renderer.extensions.has( 'WEBGL_compressed_texture_etc1' ),
+//     s3tc: renderer.extensions.has( 'WEBGL_compressed_texture_s3tc' ),
+//     pvrtc: renderer.extensions.has( 'WEBGL_compressed_texture_pvrtc' )
+// };
+// console.log(formats);
 
 
 // load assets
@@ -61,7 +69,6 @@ const manager = new THREE.LoadingManager();
 const texture_loader = new THREE.TextureLoader( manager );
 const model_loader = new GLTFLoader( manager );
 const dds_loader = new DDSLoader( manager );
-//const cubemap_loader = new HDRCubeTextureLoader( manager );
 
 const base_texture = texture_loader.load( paths.base );
 const rough_texture = texture_loader.load( paths.rough );
@@ -113,7 +120,7 @@ manager.onLoad = () => {
         aoStr : { type: "1f", value: 1.0 },
         irrMap : { type: "t", value: irr_map },
         radMap : { type: "t", value: rad_map },
-        envStr : { type: "1f", value: 0.2 },
+        envStr : { type: "1f", value: 1.0 },
     };
     const uniforms = Object.assign( a, b );
     console.log(uniforms);
@@ -125,6 +132,9 @@ manager.onLoad = () => {
         lights: true,
     });
 
+    shader_material.extensions = {
+        shaderTextureLOD: true // set to use shader texture LOD - This is to support safari desktop
+    };
 
     shader_material.needsUpdate = true;
 

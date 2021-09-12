@@ -2,7 +2,8 @@
 /*
     - it is based on a metalness/roughness workflow
     - it computes per-fragment normals at shading time (T in Application Stage)
-    - calculates direct and indirect lightning separately
+    - uses pre-filtered (BRDF pre-convolved) environment maps
+    - computes direct and indirect lightning separately
 */
 export const pbrmaterial_vs = `
     attribute vec4 tangent;
@@ -212,7 +213,7 @@ export const pbrmaterial_fs = `
         vec3 indirectRadiance = vec3(0.0);
         indirectRadiance = indirectRadiance + ambientRadiance * BRDF_Specular_GGX_Environment( n, v, cspec, roughness );
         
-        indirectLightning = indirectLightning + indirectIrradiance + indirectRadiance;
+        indirectLightning = indirectLightning + indirectRadiance + indirectIrradiance;
 
         vec3 outRadiance = directLightning + indirectLightning * (occlusion * aoStr) * envStr;
 
