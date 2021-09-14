@@ -1,10 +1,108 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>ACME Skateboards</title>
+        <meta lang="en">
+        <title>ACME Skateboards - Configurator</title>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+        <meta name="msapplication-TileColor" content="#da532c">
+        <meta name="theme-color" content="#ffffff">
+
         <link rel="stylesheet" href="res/main.css">
+        <script type="module" src="main.js"></script>
     </head>
     <body>
-        <script type="module" src="main.js"></script>
+        <nav class="menu-container">
+            <!-- burger menu -->
+            <input type="checkbox" aria-label="Toggle menu" />
+            <span></span>
+            <span></span>
+            <span></span>
+          
+            <!-- logo -->
+            <a href="#" class="menu-logo">
+                <img src="./res/icons/acme-logo.png" alt="acme-logo"/>
+            </a>
+          
+            <!-- menu items -->
+            <div class="menu">
+                <ul class="pages">
+                    <li>
+                        <a href="#">
+                            SKATE
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            SHOP
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            CONFIGURATOR
+                        </a>
+                    </li>
+                        <li>
+                            <a href="#">
+                                DEALERS
+                            </a>
+                    </li>
+                </ul>
+                <ul>
+                    <li>
+                        <a class="cart-button" href="#">
+                            <img src="./res/icons/cart-ico.png" alt="cart"/>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- this is a css-only loading screen -->
+        <section id="loading-screen">
+            <div id="loader"></div>
+        </section>
+
+        <!-- main content -->
+        <content class="content-container">
+            <div class="header">
+                <h1><span>Skateboard Configurator</span></h1>
+            </div>
+            <div id="application">
+                <div id="webgl-canvas"></div>
+                <div id="webgl-overlay"></div>
+            </div>
+            <div class="content-main">
+            </div>
+        </content>
+        <!-- Footer Section -->
+        <section class="footer-container">
+            <div class="social">
+                <h3>Social Media</h3>
+                <div class="social-icons">
+                    <div>
+                        <a href="#"><img src="./res/icons/youtube-ico.png" alt="youtube"/></a>
+                    </div>
+                    <div>
+                        <a href="#"><img src="./res/icons/facebook-ico.png" alt="facebook"/></a>
+                    </div>
+                    <div>
+                        <a href="#"><img src="./res/icons/insta-ico.png" alt="instagram"/></a>
+                    </div>
+                    <div>
+                        <a href="#"><img src="./res/icons/twitter-ico.png" alt="twitter"/></a>
+                    </div>
+                </div>
+                <p>Follow us on social media</p>
+            </div>
+            <div class="copy">
+                <p><strong>ACME Skateboards &copy; 2021</strong></p>
+                <span class="terms"><a href="#">Terms &amp; Conditions</a> | <a href="#">Privacy Policy</a></span>
+            </div>
+        </section>
     </body>
 </html>

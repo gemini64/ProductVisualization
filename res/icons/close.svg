@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 480 480" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-1080,0)">
+        <g id="Page-3" serif:id="Page 3" transform="matrix(1,0,0,1,1080,0)">
+            <rect x="0" y="0" width="480" height="480" style="fill:none;"/>
+            <g id="Layer-1" serif:id="Layer 1">
+                <g transform="matrix(1,0,0,1,344.651,107.771)">
+                    <path d="M0,264.458L-236.88,27.578C-240.785,23.672 -240.785,17.341 -236.88,13.436L-223.445,0C-219.54,-3.905 -213.208,-3.905 -209.303,0L27.577,236.881C31.482,240.786 31.482,247.118 27.577,251.023L14.143,264.458C10.237,268.363 3.905,268.363 0,264.458" style="fill-rule:nonzero;"/>
+                </g>
+                <g transform="matrix(1,0,0,1,372.228,345.152)">
+                    <path d="M0,-209.304L-236.88,27.576C-240.785,31.482 -247.117,31.482 -251.022,27.576L-264.457,14.142C-268.362,10.237 -268.362,3.904 -264.457,-0.001L-27.577,-236.881C-23.672,-240.786 -17.34,-240.786 -13.435,-236.881L0,-223.446C3.905,-219.541 3.905,-213.209 0,-209.304" style="fill-rule:nonzero;"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
