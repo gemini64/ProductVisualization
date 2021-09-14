@@ -3,6 +3,7 @@
 ![A small preview](res/images/showcase.png)
 ### Author:
 - Marzona Eugenio - 128623
+- Demo: [github.io](https://gemini64.github.io/ProductVisualization/)
 
 ## A brief description
 This mockup website includes a simple webGL skateboard configurator.
