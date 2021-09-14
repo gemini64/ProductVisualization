@@ -18,9 +18,8 @@ This repository includes:
 * `./res/icons/*` -> Vector and raster icons.
 * `./res/fonts/*` -> Self-hosted typefaces. They are CC0 or open-license and were fetched from Google Fonts and DaFonts.
 * `./res/images/*` -> This directory contains the environment maps and the products's thumbnails. The envMaps come from **HDRI Haven** and the scene's default environment map is **london_studio**.
-* `./res/textures/*` -> This directory contains every texture in png format, both in 2k and 4k resolution.
+* `./res/textures/*` -> This directory contains every texture in png format, in 2k resolution.
 * `./three/*` -> Self-hosted **Three.js** library.
-* `./workfile-and-assets/*` -> Blender, Substance and Affinity workfiles/assets. These are included for archival purposes.
 * `./modules/*` -> Ancillary js modules. These includes some data and html fragments templates and the shaders's source code.
 * `./journal.md` -> A text document that describes, in broad terms, the creation process.
 
@@ -34,7 +33,7 @@ Sculpture [Bust of Róża Loewenfeld](https://sketchfab.com/3d-models/sculpture-
 
 ### Everything else
 Other textures, images, and icons were produced by me.
-Workfiles are included in the directory `./workfile-and-assets/`.
+If substance blender and other workfiles are needed, plese ask.
 
 ## Tools used 
 - **VS Code** and **Firefox + Babylonjs extension**: for general Javascript/GLSL development.
