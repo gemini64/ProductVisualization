@@ -652,11 +652,11 @@ div.prod-img {
 
 /* some selected styles */
 div.button[selected="true"] {
-    background: #827878;
+    background: #257AFD;
 }
 
 div.button[selected="true"] img {
-    filter: invert(29%) sepia(19%) saturate(0%) hue-rotate(180deg) brightness(86%) contrast(97%);
+    filter: invert(100%) sepia(0%) saturate(3797%) hue-rotate(223deg) brightness(114%) contrast(87%);
 }
 
 div.product[selected="true"] {
