@@ -43,6 +43,8 @@ Provando a descrivere brevemente il workflow completo:
 - applicazione degli stickers al modello in substance
 - export delle texture map in risoluzione 2k e 4k
 
+Non ho effettuato tuttavia nessuna ottimizzazione sul modello sorgente. Molti elementi, fra cui viti e bulloni, sono stati modellati con un livello di dettaglio piuttosto alto e potrebbero essere facilmente semplificati ed inclusi in una normal map.
+
 ## Creazione delle thumbnails
 Per creare le thumbnails per l'interfaccia di selezione dei materiali ho deciso di effettuare molto velocemente dei render utilizzando il renderer di blender
 
