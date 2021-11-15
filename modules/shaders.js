@@ -211,8 +211,48 @@ export const pbrmaterial_fs = `
         vec3 outRadiance = directLighting + iblLighting * (occlusion * aoStr) * envStr;
 
         // out value is gamma encoded
-        GammaEncode( outRadiance, GAMMA );
         gl_FragColor = vec4(outRadiance, 1.0);
 
+    }
+`;
+
+
+/*
+    A simple Color Grading + Customizable exposure shader
+
+    Uses Unreal 3 Tone Map
+    - closely mimics Tonemap_ACES
+    - Gamma 2.2 correction is baked in
+*/
+export const postFX_vs = `
+    varying vec2 vUv;
+    void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    }
+`;
+
+export const postFX_fs = `
+    uniform sampler2D tDiffuse;
+    uniform float exposure;
+    varying vec2 vUv;
+    const float GAMMA = 2.2;
+
+    vec3 unreal(vec3 x) {
+        return x / (x + 0.155) * 1.019;
+    }
+
+    void GammaEncode( inout vec3 source, float gamma ) {
+        source = pow( source , vec3(1.0/gamma) );
+    }
+
+    void main() {
+        vec4 texel = texture2D( tDiffuse, vUv );
+
+        vec3 col = unreal( texel.xyz );
+        col = clamp(exposure * col, 0., 1.);
+        //GammaEncode( col, GAMMA );
+
+        gl_FragColor = vec4(col,1.0);
     }
 `;

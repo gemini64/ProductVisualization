@@ -5,7 +5,11 @@ import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
 import { DDSLoader } from './three/examples/jsm/loaders/DDSLoader.js';
 import { RGBELoader } from './three/examples/jsm/loaders/RGBELoader.js';
 
-import { pbrmaterial_fs, pbrmaterial_vs } from './modules/shaders.js'; // glsl shaders
+import { EffectComposer } from './three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from './three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from './three/examples/jsm/postprocessing/ShaderPass.js';
+
+import { pbrmaterial_fs, pbrmaterial_vs, postFX_fs, postFX_vs } from './modules/shaders.js'; // glsl shaders
 import * as DATA from './modules/data.js'; // main data structure
 import * as UI from './modules/ui.js'; // ui-overlay templates
 
@@ -22,6 +26,25 @@ const renderer = new THREE.WebGLRenderer({
 webgl_canvas.appendChild( renderer.domElement ); // add renderer to dom
 const canvas = renderer.domElement;
 
+// setup renderer
+const composer = new EffectComposer( renderer );
+composer.addPass( new RenderPass( scene, camera ) );
+
+// add postFX pass
+const postFXPass = {
+    vertexShader: postFX_vs,
+    fragmentShader: postFX_fs,
+    uniforms: {
+        'tDiffuse': { value: null },
+        'exposure': { value: 1.05 }
+    }
+}
+const colorPass = new ShaderPass( postFXPass );
+colorPass.renderToScreen = true;
+
+composer.addPass( colorPass );
+
+
 // stats setup
 const stats_enable = false;
 const stats = Stats();
@@ -36,7 +59,7 @@ const controls = new OrbitControls( camera, renderer.domElement );
 
 
 // scene illumination
-const environment_str = 1.0; // environment light strenght
+const environment_str = 0.9; // environment light strenght
 const occlusion_str = 1.0; // ambient occlusion strenght
 const fill_str = 0.35;
 const key_str = 0.5;
@@ -85,11 +108,6 @@ scene.add(key);
 
 camera.position.set( 0, 6, 880);
 controls.update();
-
-// tonemapping & exposure
-renderer.toneMapping = THREE.CineonToneMapping;
-renderer.toneMappingExposure = 0.85;
-
 
 // const formats = {
 //     astc: renderer.extensions.has( 'WEBGL_compressed_texture_astc' ),
@@ -188,7 +206,7 @@ function animate() {
 
     stats.update();
     controls.update();
-    renderer.render( scene, camera );
+    composer.render();
 }
 
 function resizeCanvasToDisplaySize(force) {
@@ -198,6 +216,10 @@ function resizeCanvasToDisplaySize(force) {
     if (force || canvas.width !== width ||canvas.height !== height) {
       // you must pass false here or three.js sadly fights the browser
       renderer.setSize(width, height, false);
+      composer.setSize(width, height, false);
+      
+      
+
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
   
