@@ -19,10 +19,11 @@ const webgl_overlay = document.getElementById("webgl-overlay");
 
 // general scene & camera
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, 1, 1, 10000 ); // this is set in resizeCanvasToDisplaySize
+const camera = new THREE.PerspectiveCamera( 75, 1, 5.0, 5000 ); // this is set in resizeCanvasToDisplaySize
 
 const renderer = new THREE.WebGLRenderer({
-    antialias: true });
+    antialias: true,
+});
 webgl_canvas.appendChild( renderer.domElement ); // add renderer to dom
 const canvas = renderer.domElement;
 
@@ -31,18 +32,16 @@ const composer = new EffectComposer( renderer );
 composer.addPass( new RenderPass( scene, camera ) );
 
 // add postFX pass
-const postFXPass = {
+const postFXPass = new ShaderPass({
     vertexShader: postFX_vs,
     fragmentShader: postFX_fs,
     uniforms: {
         'tDiffuse': { value: null },
-        'exposure': { value: 1.05 }
+        'exposure': { value: 1.04 }
     }
-}
-const colorPass = new ShaderPass( postFXPass );
-colorPass.renderToScreen = true;
-
-composer.addPass( colorPass );
+});
+postFXPass.renderToScreen = true;
+composer.addPass( postFXPass );
 
 
 // stats setup
@@ -59,10 +58,10 @@ const controls = new OrbitControls( camera, renderer.domElement );
 
 
 // scene illumination
-const environment_str = 0.9; // environment light strenght
+const environment_str = 0.70; // environment light strenght
 const occlusion_str = 1.0; // ambient occlusion strenght
-const fill_str = 0.35;
-const key_str = 0.5;
+const fill_str = 0.4;
+const key_str = 0.55;
 
 const key_color = new THREE.Color("rgb(255,249,230)");
 const fill_color = new THREE.Color("rgb(255,250,240)");
@@ -89,8 +88,8 @@ const key = new THREE.PointLight(
 );
 
 key.position.set( 0, 500, 300 );
-fill1.position.set( 380, -230, 70 );
-fill2.position.set( -380, -230, 70 );
+fill1.position.set( 380, -450, 70 );
+fill2.position.set( -380, -450, 70 );
 
 scene.add(fill1);
 scene.add(fill2);

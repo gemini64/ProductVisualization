@@ -1,4 +1,5 @@
 body {
+    overflow-x: hidden;
     margin: 0 auto;
     background-color: #EEEEEE;
 }
@@ -298,7 +299,7 @@ body, p, em, span, ul, ol {
 }
 
 .content-container div.content-main, div#application {
-    max-width: 1200px;
+    max-width: 2100px;
     align-self: center;
     width: 100%;
 }
@@ -311,8 +312,6 @@ div.header {
 div.header,div.content-main {
     padding-top: 0.7em;
     padding-bottom: 0.7em;
-    padding-left: 0.7em;
-    padding-right: 0.7em;
 }
 
 div.header {
@@ -517,7 +516,6 @@ div.header h1 span {
 }
 
 div#application {
-    padding-top: 4.0em;
     position: relative;
 }
 
@@ -599,16 +597,20 @@ div.product-list {
 
 div.button img {
     fill: rgb(38, 38, 38);
+    height: 100%;
 }
 
 div.button div {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;  /* Centering y-axis */
-    align-items :center;
+    display: inline-block;
+    /* flex-direction: column;
+    justify-content: center; 
+    align-items: center;
     
-    width: 100%;
     height: 100%;
+
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none; */
 }
 
 div.close-button {
