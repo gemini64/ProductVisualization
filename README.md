@@ -44,8 +44,10 @@ If substance blender and other workfiles are needed, plese ask.
 - **PowerVR's PVRTextTool**: used to produce pre-filtered ( BRDF convolved ) radiance/irradiance cube-maps.
 
 ## Known issues
-This web-application should be ready for website deployment and should display as expected on modern versions (Javascript ES6 compliant) of **Firefox** and **Chrome/Derivates**.
+This web-application should be ready for website deployment and should display as expected on modern versions (Javascript ES6 compliant) of **Firefox**, **Chrome/Derivates** and **Safari**.
 
-***However***, at the moment of writing:
-- The materials selector overlay is completely borked on Safari Desktop. This is probably due to a bug with Safari's css-flex property support.
-- The interface should be mobile ready, however the application might fail to load on certain combinations of mobile OSs/browsers due to lack of **s3tc** codec support (the cubemaps used are encoded in s3tc format).
+Open issues:
+- <s>The materials selector overlay is completely borked on Safari Desktop. This is probably due to a bug with Safari's css-flex property support.</s> (Fixed)
+- <s>The interface should be mobile ready, however the application might fail to load on certain combinations of mobile OSs/browsers due to lack of **s3tc** codec support (the cubemaps used are encoded in s3tc format).</s> (Partially solved)
+- The interface has no "lock camera" button.
+- The user might experience minor z-fighting artifacts at certain distances from the scene's objects (this happens only on chome and safari).
