@@ -3,12 +3,17 @@
     - it is based on a metalness/roughness workflow
     - it computes per-fragment normals at shading time (T in Application Stage)
     - uses pre-filtered (BRDF pre-convolved) environment maps
-    - computes direct and indirect lightning separately
+
+    Notes: this uses the UE4 ibl approach (see: https://www.gamedevs.org/uploads/real-shading-in-unreal-engine-4.pdf)
+    so split sum approximation and GGX (using pre-filtered maps and a BRDF look-up table)
+
+    See also PowerVR's demo (https://github.com/powervr-graphics/Native_SDK/tree/master/examples/OpenGLES/ImageBasedLighting)
 */
 export const pbrmaterial_vs = `
     attribute vec4 tangent;
     varying vec3 vNormal;
     varying vec3 vPosition;
+    varying vec3 wPosition;
     varying vec2 vUv;
     varying vec3 vTangent;
     varying vec3 vBitangent;
@@ -16,6 +21,7 @@ export const pbrmaterial_vs = `
     void main() {
         vec4 vPos = modelViewMatrix * vec4( position, 1.0 );
         vPosition = vPos.xyz;
+        wPosition = (modelMatrix * vec4( position, 1.0 )).xyz;
         vUv = uv;
 
         vNormal = normalize( normalMatrix * normal );
@@ -47,12 +53,15 @@ export const pbrmaterial_fs = `
     uniform sampler2D normalMap;
     uniform float aoStr;
     uniform sampler2D aoMap;
+    uniform sampler2D brdfLUT;
     uniform samplerCube irrMap;
     uniform samplerCube radMap;
+    uniform samplerCube envMap;
     uniform float envStr;
 
     // directions
     varying vec3 vPosition;
+    varying vec3 wPosition;
     varying vec2 vUv;
     varying vec3 vTangent;
     varying vec3 vBitangent;
@@ -86,58 +95,42 @@ export const pbrmaterial_fs = `
     }
 
     // IBL Helpers
-    float pow2( const in float x ) {
-        return x*x;
+    vec2 IntegrateBRDF( vec3 N, vec3 V, float roughness, const in sampler2D brdfLUT)  {
+        return texture2D( brdfLUT, vec2( clamp( dot(N, V), 0.0, 1.0), roughness ) ).xy;
+    }
+    
+    vec3 getIBLDiff( vec3 N, const in samplerCube irrMap) {
+        return textureCube( irrMap, N ).rgb;
     }
 
-    float GGXRoughnessToBlinnExponent( const in float roughness ) {
-        return ( 2.0 / pow2( roughness + 0.0001 ) - 2.0 );
+    vec3 getIBLSpec( vec3 R, const in samplerCube radMap, const in samplerCube envMap, float roughness, float maxmip ) {
+
+        float cutoff = 1.0 / maxmip;
+
+        if(roughness <= cutoff)
+        {
+            float lod = roughness * maxmip;
+            return mix( textureLod(envMap, R, 0.).rgb, textureLod(radMap, R, 0.).rgb, lod);
+        }
+        else
+        {
+            float lod = (roughness - cutoff) * maxmip / (1. - cutoff); // Remap to 0..1 on rest of mip maps
+            return textureLod(radMap, R, lod).rgb;
+        }
     }
 
     vec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {
         return normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );
     }
 
-    float getSpecularMIPLevel( const in float blinnShininessExponent, const in int maxMIPLevel ) {
-        float maxMIPLevelScalar = float( maxMIPLevel );
-        float desiredMIPLevel = maxMIPLevelScalar + 0.79248 - 0.5 * log2( pow2( blinnShininessExponent ) + 1.0 );
-        return clamp( desiredMIPLevel, 0.0, maxMIPLevelScalar );
-    }
-
-    vec3 getIBLRadiance( const in vec3 viewDir, const in vec3 normal, const in float blinnShininessExponent, const in int maxMIPLevel, const in samplerCube envMap ) {
-        vec3 reflectVec = reflect( -viewDir, normal );
-        reflectVec = inverseTransformDirection( reflectVec, viewMatrix );
-        float specularMIPLevel = getSpecularMIPLevel( blinnShininessExponent, maxMIPLevel );
-
-        vec3 queryReflectVec = vec3( -1.0 * reflectVec.x, reflectVec.yz );
-        vec4 envMapColor = textureCubeLodEXT( envMap, queryReflectVec, specularMIPLevel );
-        //envMapColor = RGBEToLinear(envMapColor);
-
-        return envMapColor.rgb;
-    }
-
-    vec3 getIBLIrradiance( const in vec3 normal, const in samplerCube envMap ) {
-        vec3 worldNormal = inverseTransformDirection( normal, viewMatrix );
-        vec3 queryVec = vec3( -1.0 * worldNormal.x, worldNormal.yz );
-        vec4 envMapColor = textureCube( envMap, queryVec);
-        //envMapColor = RGBEToLinear(envMapColor);
-
-        return envMapColor.rgb;
-    }
-
-    vec3 BRDF_Specular_GGX_Environment( vec3 normal, vec3 viewDir, const in vec3 cspec, const in float roughness ) { 
-        float dotNV = clamp( dot( normal, viewDir ), 0.0, 1.0);
-        const vec4 c0 = vec4( - 1, - 0.0275, - 0.572, 0.022 ); 
-        const vec4 c1 = vec4( 1, 0.0425, 1.04, - 0.04 ); 
-        vec4 r = roughness * c0 + c1; 
-        float a004 = min( r.x * r.x, exp2( - 9.28 * dotNV ) ) * r.x + r.y; 
-        vec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw;
-        return cspec * AB.x + AB.y;
+    vec3 f_schlickR(float cosTheta, vec3 F0, float roughness)
+    {
+        return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
     }
 
     void main() {
-        vec3 directLightning = vec3(0.0);
-        vec3 indirectLightning = vec3(0.0);
+        vec3 directLighting = vec3(0.0);
+        vec3 iblLighting = vec3(0.0);
 
         // set up per-fragment normal
         vec3 normal = normalize( vNormal );
@@ -148,9 +141,6 @@ export const pbrmaterial_fs = `
         mat3 vTBN = mat3( tangent, bitangent, normal );
         vec3 mapN = texture2D( normalMap, vUv ).xyz * 2.0 - 1.0;
         vec3 n = normalize( vTBN * mapN );
-
-        // get normal in world space
-        vec3 worldN = inverseTransformDirection( n, viewMatrix );
 
         // read per-fragment roughness
         float roughness = texture2D( roughnessMap, vUv.xy ).x;
@@ -173,7 +163,7 @@ export const pbrmaterial_fs = `
         vec3 v = normalize( -vPosition );
         float nDotv = max(0.000001, dot(n,v));
 
-        // - - - - Direct Lightning
+        // - - - - Direct Lighting
         for ( int i=0; i < NUM_POINT_LIGHTS; i++ ) {
             // light position passed as uniform is already in camera space
             vec4 lPosition = vec4(pointLights[i].position, 1.0);
@@ -199,23 +189,26 @@ export const pbrmaterial_fs = `
             vec3 specularTerm = ( fTerm * GSmith * GGX(alpha, nDoth) ) / ( 4.0 * nDotl * nDotv );
             vec3 diffuseTerm = (vec3(1.0) - fTerm) * (cdiff / PI);
 
-            directLightning = directLightning + ( PI * (clight * attenuation) * nDotl * (specularTerm + diffuseTerm));
+            directLighting = directLighting + ( PI * (clight * attenuation) * nDotl * (specularTerm + diffuseTerm));
         }
 
-        // - - - - Indirect Lightning
-        vec3 ambientIrradiance = getIBLIrradiance( n, irrMap );
-        
-        vec3 indirectIrradiance = vec3(0.0);
-        indirectIrradiance = indirectIrradiance + cdiff * ambientIrradiance;
+        // - - - - IBL Lighting
+        // setup queryvectors - supplied in worldspace
+        vec3 worldN = inverseTransformDirection( n, viewMatrix );
+        vec3 worldV = cameraPosition - wPosition ;
+        vec3 worldR = normalize( reflect(-worldV,worldN));
 
-        vec3 ambientRadiance = getIBLRadiance( normalize( vPosition ), n, GGXRoughnessToBlinnExponent( roughness ), 9, radMap );
-        
-        vec3 indirectRadiance = vec3(0.0);
-        indirectRadiance = indirectRadiance + ambientRadiance * BRDF_Specular_GGX_Environment( n, v, cspec, roughness );
-        
-        indirectLightning = indirectLightning + indirectRadiance + indirectIrradiance;
+        vec3 iblDiff = getIBLDiff( vec3(-worldN.x,worldN.yz), irrMap );
+        vec3 iblSpec = getIBLSpec( vec3(-worldR.x,worldR.yz), radMap, envMap, roughness, 9.0 );
 
-        vec3 outRadiance = directLightning + indirectLightning * (occlusion * aoStr) * envStr;
+        vec2 brdf = IntegrateBRDF( n, v, roughness, brdfLUT);
+
+        vec3 F = f_schlickR(max(dot(n, v), 0.0), cspec, roughness);
+        vec3 kD = vec3(1.0 - F) * (1.0 - metallic); // Diffuse factor, this is probably for energy conservation
+        
+        iblLighting = iblLighting + (kD * cdiff * iblDiff + iblSpec * (F * brdf.x + brdf.y));
+
+        vec3 outRadiance = directLighting + iblLighting * (occlusion * aoStr) * envStr;
 
         // out value is gamma encoded
         GammaEncode( outRadiance, GAMMA );

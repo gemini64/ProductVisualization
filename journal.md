@@ -61,10 +61,6 @@ A questo punto, ho caricato il modello e le texture definitive nella mia scena t
 La scena finale utilizza 3 point lights (1 key e 2 fill laterali) ed un contributo minimo della envMap.
 
 ## Setup dell'interfaccia per la selezione dei materiali
-Qui purtroppo ho speso gran parte del tempo dedicato a questo progetto, a causa di alcune scelte infelici effettuate nelle fasi precedenti.
-
-Probabilmente la selezione di un qualunque framework javascript per la realizzazione di interfacce mi avrebbe semplificato molto questa procedura.
-
 L'interfaccia è stata pensata su carta e successivamente realizzata in maniera dinamica utilizzando dei template di frammenti html.
 
 Il risultato finale è una ui per la selezione dei materiali "flottante" che dovrebbe essere utilizzabile anche su mobile.

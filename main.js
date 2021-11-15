@@ -3,6 +3,7 @@ import Stats from './three/examples/jsm/libs/stats.module.js';
 import { GLTFLoader } from './three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
 import { DDSLoader } from './three/examples/jsm/loaders/DDSLoader.js';
+import { RGBELoader } from './three/examples/jsm/loaders/RGBELoader.js';
 
 import { pbrmaterial_fs, pbrmaterial_vs } from './modules/shaders.js'; // glsl shaders
 import * as DATA from './modules/data.js'; // main data structure
@@ -27,15 +28,15 @@ const stats = Stats();
 
 // orbitcontrols
 const controls = new OrbitControls( camera, renderer.domElement );
-controls.enablePan = false;
-controls.enableRotate = false;
-controls.enableDamping = true;
-controls.maxDistance = 2300;
-controls.minDistance = 430;
+// controls.enablePan = false;
+// controls.enableRotate = false;
+// controls.enableDamping = true;
+// controls.maxDistance = 2300;
+// controls.minDistance = 430;
 
 
 // scene illumination
-const environment_str = 0.4; // environment light strenght
+const environment_str = 1.0; // environment light strenght
 const occlusion_str = 1.0; // ambient occlusion strenght
 const fill_str = 0.35;
 const key_str = 0.5;
@@ -107,12 +108,18 @@ const manager = new THREE.LoadingManager();
 const texture_loader = new THREE.TextureLoader( manager );
 const model_loader = new GLTFLoader( manager );
 const dds_loader = new DDSLoader( manager );
+const img_loader = new RGBELoader( manager );
 
 loadTextureSet( mydata, texture_loader, "2k" );
 
+// - - - BRDF lut
+img_loader.setDataType( THREE.FloatType );
+const brdf_lut = img_loader.load( "./res/images/brdfLUT.hdr" );
+
 // - - - ENVMAPS
-const irr_map = dds_loader.load( "./res/images/cubemaps/studio_country/diffuse.dds" );
-const rad_map = dds_loader.load( "./res/images/cubemaps/studio_country/specular.dds" );
+const irr_map = dds_loader.load( "./res/images/cubemaps/studio_london/diffuse.dds" );
+const rad_map = dds_loader.load( "./res/images/cubemaps/studio_london/specular.dds" );
+const env_map = dds_loader.load( "./res/images/cubemaps/studio_london/environment.dds" );
 
 // - - - MODELS
 const default_material = {
@@ -267,7 +274,6 @@ function buildOverlay( data ) {
     overlay_buttons_content += UI.button_list( { id: "button-list", content: button_list_content } );
     let overlay_content = UI.overlay( { buttons: overlay_buttons_content, products: overlay_products_content });
 
-    console.log(overlay_content);
     document.getElementById('webgl-overlay').innerHTML = overlay_content;
 
     //bind functions
@@ -329,12 +335,8 @@ function loadMaterial() {
 
         const texture = eval(this.getAttribute("texture-path"));
 
-        console.log(texture);
-
         let rename = mydata.model_renames[category];
 
-        console.log(category);
-        console.log(rename);
         let mesh = scene.getObjectByName( rename , true );
 
         mesh.material.uniforms.basecolorMap.value = texture.albedo;
@@ -399,6 +401,8 @@ function setMaterial( data, textures ) {
         aoStr : { type: "1f", value: occlusion_str },
         irrMap : { type: "t", value: null },
         radMap : { type: "t", value: null },
+        envMap : { type: "t", value: null },
+        brdfLUT : { type: "t", value: null },
         envStr : { type: "1f", value: environment_str },
     };
 
@@ -416,6 +420,8 @@ function setMaterial( data, textures ) {
         materials[key].uniforms.aoMap.value = textures[key].occlusion;
         materials[key].uniforms.irrMap.value = irr_map;
         materials[key].uniforms.radMap.value = rad_map;
+        materials[key].uniforms.envMap.value = env_map;
+        materials[key].uniforms.brdfLUT.value = brdf_lut;
 
         mesh.material = materials[key];
         mesh.material.needsUpdate = true;
