@@ -110,12 +110,12 @@ export const pbrmaterial_fs = `
         if(roughness <= cutoff)
         {
             float lod = roughness * maxmip;
-            return mix( textureLod(envMap, R, 0.).rgb, textureLod(radMap, R, 0.).rgb, lod);
+            return mix( textureCubeLodEXT(envMap, R, 0.).rgb, textureCubeLodEXT(radMap, R, 0.).rgb, lod);
         }
         else
         {
             float lod = (roughness - cutoff) * maxmip / (1. - cutoff); // Remap to 0..1 on rest of mip maps
-            return textureLod(radMap, R, lod).rgb;
+            return textureCubeLodEXT(radMap, R, lod).rgb;
         }
     }
 
