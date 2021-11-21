@@ -212,7 +212,7 @@ export const pbrmaterial_fs = `
         //vec3 outRadiance = directLighting;
         //vec3 outRadiance = iblLighting * (occlusion * aoStr) * envStr;
 
-        // out value is gamma encoded
+        // gamma encoding is done in POST
         gl_FragColor = vec4(outRadiance, 1.0);
 
     }
@@ -224,6 +224,12 @@ export const pbrmaterial_fs = `
 
     Uses Uchimura tonemapping (from Gran Turismo sport)
     - the paper is in japanese (https://www.slideshare.net/nikuque/hdr-theory-and-practicce-jp)
+
+    In Order:
+    - Read texel color
+    - Regulate exposure ( the out value is RGB Unbound, conversion from HDR to SDR is done via ToneMapping )
+    - Tonemap
+    - Gamma Encode
 */
 export const postFX_vs = `
     varying vec2 vUv;
@@ -236,6 +242,7 @@ export const postFX_vs = `
 export const postFX_fs = `
     uniform sampler2D tDiffuse;
     uniform float exposure;
+    uniform vec3 colorFilter;
     varying vec2 vUv;
     const float GAMMA = 2.2;
 
@@ -301,9 +308,9 @@ export const postFX_fs = `
         return uchimura(x, P, a, m, l, c, b);
     }
 
-    // exposure here is a float value
-    void clampExposure( inout vec3 source, float exposure ) {
-        source = clamp(exposure * source, 0., 1.);
+    void SetExposure( inout vec3 source, vec3 colorFilter, float exposure ) {
+        vec3 exposureFilter = exp2(exposure) * colorFilter;
+        source = source * exposureFilter;
     }
 
     void GammaEncode( inout vec3 source, float gamma ) {
@@ -311,10 +318,14 @@ export const postFX_fs = `
     }
 
     void main() {
-        vec4 texel = texture2D( tDiffuse, vUv );
+        // read texel color
+        vec3 texel = texture2D( tDiffuse, vUv ).rgb;
 
-        vec3 outColor = uchimura( texel.xyz );
-        clampExposure( outColor, exposure );
+        // set exposure
+        SetExposure( texel, colorFilter, exposure );
+
+        // tonemap and gamma encode
+        vec3 outColor = uchimura( texel );
         GammaEncode( outColor, GAMMA );
 
         gl_FragColor = vec4( outColor, 1.0 );

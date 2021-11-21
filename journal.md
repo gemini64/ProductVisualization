@@ -92,3 +92,7 @@ Ho rivisto le direttive css per sistemare i problemi di compatibilità precedent
 Adesso il progetto dovrebbe caricare con l'aspect-ratio corretto anche su mobile, tuttavia, in assenza di compatibilità con le estensioni WebGL per l'accesso diretto ai livelli di mip sulle cube-map, la scena verrà caricata con le sole luci puntiformi.
 
 Questo è effettivamente il comportamento osservato su safari e chrome mobile (su ipad e iphone).
+
+## Aggiornamenti - 21 Novembre
+- Rivisto lo shader relativo ai PostFXs. Corrette le modalità e ordine di applicazione degli effetti.
+- Riviste le posizioni di near e far plane per ridurre i problemi di z-fighting precedentemente rilevati su Safari e Chrome.

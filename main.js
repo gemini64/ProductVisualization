@@ -19,7 +19,7 @@ const webgl_overlay = document.getElementById("webgl-overlay");
 
 // general scene & camera
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, 1, 5.0, 5000 ); // this is set in resizeCanvasToDisplaySize
+const camera = new THREE.PerspectiveCamera( 75, 1, 50.0, 5000 ); // this is set in resizeCanvasToDisplaySize
 
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -37,7 +37,8 @@ const postFXPass = new ShaderPass({
     fragmentShader: postFX_fs,
     uniforms: {
         'tDiffuse': { value: null },
-        'exposure': { value: 1.04 }
+        'exposure': { value: 0.1 }, // use values >= 0.0
+        'colorFilter': { value: new THREE.Vector3(1.0,1.0,1.0) } // set to neutral color filter
     }
 });
 postFXPass.renderToScreen = true;
